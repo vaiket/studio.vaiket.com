@@ -1,0 +1,59 @@
+﻿generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model BuilderUser {
+  id           String        @id @default(uuid())
+  vaiketUserId String
+  email        String
+  tenantId     Int
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  sites        BuilderSite[]
+
+  @@unique([vaiketUserId, tenantId], name: "vaiketUserId_tenantId")
+  @@index([email])
+}
+
+model BuilderSite {
+  id           String        @id @default(uuid())
+  ownerId      String
+  owner        BuilderUser   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name         String
+  domain       String?
+  status       String        @default("draft")
+  lastEditedAt DateTime?
+  publishedAt  DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  pages        BuilderPage[]
+
+  @@index([ownerId])
+}
+
+model BuilderPage {
+  id          String      @id @default(uuid())
+  siteId      String
+  site        BuilderSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  title       String
+  contentJson Json
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([siteId])
+}
+
+model BuilderTemplate {
+  id          String   @id @default(uuid())
+  name        String
+  category    String
+  contentJson Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
